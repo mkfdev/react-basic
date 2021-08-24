@@ -50,7 +50,7 @@ const Maker = ({FileInput, authService, cardRepository}) => {
 
     //unmount -> resource memory정리
     return () => stopSync();
-  }, [userId]);
+  }, [userId, cardRepository]);
 
   //로그아웃 후 user가 없으면 home으로 이동
   useEffect(() => {
@@ -61,7 +61,7 @@ const Maker = ({FileInput, authService, cardRepository}) => {
         history.push('/');
       }
     })
-  });
+  }, [userId, history, authService]);
   
   return (
     <section className={styles.maker}>

@@ -28,7 +28,7 @@ function getStyles(theme) {
     case 'colorful':
       return styles.colorful;
     default:
-      throw new Error('unknown theme: ${theme}');
+      throw new Error(`unknown theme: ${theme}`);
   }
 }
 export default Card;
