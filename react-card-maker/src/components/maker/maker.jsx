@@ -6,42 +6,10 @@ import { useHistory } from "react-router-dom";
 import Editor from "../editor/editor";
 import Preview from "../preview/preview";
 
-const Maker = ({FileInput, authService}) => {
-  const [cards, setCards] = useState({
-    '1': {
-      id: '1', 
-      name: 'Ellie: Dream Coding', 
-      company:'Samsung', 
-      theme: 'dark', 
-      title:"Software Engineer", 
-      email:'ellie@gmail.com', 
-      message:'go for it', 
-      fileName:'ellie', 
-      fileURL: null 
-    },
-    '2': {
-      id: '2', 
-      name: 'Bob: Dream Coding', 
-      company:'Samsung', 
-      theme: 'light', 
-      title:"Software Engineer", 
-      email:'ellie@gmail.com', 
-      message:'go for it', 
-      fileName:'ellie', 
-      fileURL: null 
-    },
-    '3': {
-      id: '3', 
-      name: 'Chris: Dream Coding',
-      company:'Samsung', 
-      theme: 'colorful', 
-      title:"Software Engineer", 
-      email:'ellie@gmail.com', 
-      message:'go for it', 
-      fileName:'ellie', 
-      fileURL: null 
-    }
-  });
+const Maker = ({FileInput, authService, cardRepository}) => {
+  const historyState = useHistory().state;
+  const [cards, setCards] = useState({});
+  const [userId, setUserId] = useState(historyState && historyState.id);
   //key는 card의 id
 
   const history = useHistory();
@@ -59,7 +27,8 @@ const Maker = ({FileInput, authService}) => {
       const updated = {...prevCards};
       updated[card.id] = card;
       return updated;
-    })
+    });
+    cardRepository.saveCard(userId, card);
   };
 
   const deleteCard = card => {
@@ -67,13 +36,28 @@ const Maker = ({FileInput, authService}) => {
       const updated = {...prevCards};
       delete updated[card.id];
       return updated;
-    })
+    });
+    cardRepository.removeCard(userId, card);
   };
+
+  useEffect(()=>{
+    if(!userId) {
+      return;
+    }
+    const stopSync = cardRepository.syncCards(userId, cards => {
+      setCards(cards);
+    });
+
+    //unmount -> resource memory정리
+    return () => stopSync();
+  }, [userId]);
 
   //로그아웃 후 user가 없으면 home으로 이동
   useEffect(() => {
     authService.onAuthChange(user => {
-      if(!user) {
+      if(user) {
+        setUserId(user.uid);
+      } else {
         history.push('/');
       }
     })
